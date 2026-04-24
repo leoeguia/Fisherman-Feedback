@@ -14,16 +14,12 @@ library(ggplot2)
 library(tidytext)
 library(wordcloud)
 library(readxl)
+
+
 ##pull in data
-#sheet_url <- "https://docs.google.com/spreadsheets/d/1DqinWqMIFWkyUTTd_f1RNwfmRtLQBm0BHyHHgubFFj8/edit?usp=sharing"
 rm(list=ls())
-#df <- read_sheet(sheet_url)
-setwd("C:/Users/Leo/GOM/Gulf of Mexico - Documents/Outreach/Fisherman Feedback_Something's Fishy/gag/2026")
+#setwd("C:/Users/Leo/Documents/R working directory/Fisherman Feedback") #adjust accordingly
 df<- read_xls("Gag_Fisherman Feedback_2026_CLEAN for analysis.xls") #Change this for different species
-#setwd("C:/Users/LisaH/OneDrive - GOM/Desktop/WFH/sentiment/gray triggerfish 25")
-#df<-read.csv("gt_comments.csv",header=T)
-
-
 
 ###create new database that is only the comments NOTE: that column and row changes each time
 #rg<-df[1:200,1]
@@ -124,7 +120,33 @@ bing_word_counts %>%
   scale_y_continuous()+
   coord_flip()
 
+top_words <- bing_word_counts %>%
+  group_by(sentiment) %>%
+  top_n(10) %>%
+  ungroup() %>%
+  mutate(word = reorder(word, n)) 
+barchart <- ggplot(top_words, aes(word, n, fill = sentiment)) +
+  scale_fill_manual(values=c("#fc8d59","#99d594"))+
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(y = "Contribution to sentiment",
+       x = NULL) +theme(axis.title=element_text(size=14),axis.text=element_text(size=12))+theme(strip.text=element_text(size=14))+
+  scale_y_continuous()+
+  coord_flip()
+print(barchart)
+
+ggsave("Word Plots/Most Frequent Bar.png", 
+       plot = barchart,
+       width = 8, #Adjust width as needed
+       height = 8, #Adjust height as needed
+       units = "in", 
+       dpi = 700)
 ###This creates the sentiment word cloud
+png("Word Plots/Most Frequent Cloud.png",
+    width = 4, #Adjust width as needed
+    height = 4, #Adjust height as needed
+    units = "in", 
+    res = 700)
 par(mar = c(0, 0, 0, 0))
 rg3 %>%
   inner_join(new_sentiment) %>%
@@ -132,7 +154,7 @@ rg3 %>%
   acast(word ~ sentiment, value.var = "n", fill = 0) %>%
   comparison.cloud(colors = c("#fc8d59","#99d594"), 
                    max.words = 30, title.size=1.5,match.color=TRUE)
-
+dev.off()
 # Abundance People Only ---------------------------------------------------
 
 df<- read_xls("Gag_Fisherman Feedback_2026_CLEAN for analysis.xls") #Change this for different species
@@ -239,7 +261,44 @@ bing_word_counts %>%
   scale_y_continuous()+
   coord_flip()
 
+top_words <- bing_word_counts %>%
+  group_by(sentiment) %>%
+  top_n(10) %>%
+  ungroup() %>%
+  mutate(word = reorder(word, n)) 
+barchart <- ggplot(top_words, aes(word, n, fill = sentiment)) +
+  scale_fill_manual(values=c("#fc8d59","#99d594"))+
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(y = "Contribution to sentiment",
+       x = NULL) +theme(axis.title=element_text(size=14),axis.text=element_text(size=12))+theme(strip.text=element_text(size=14))+
+  scale_y_continuous()+
+  coord_flip()
+print(barchart)
+
+ggsave("Word Plots/Most Frequent Bar Abundance.png", 
+       plot = barchart,
+       width = 8, #Adjust width as needed
+       height = 8, #Adjust height as needed
+       units = "in", 
+       dpi = 700)
+
+
 ###This creates the sentiment word cloud
+png("Word Plots/Most Frequent Cloud Abundance.png",
+    width = 4, #Adjust width as needed
+    height = 4, #Adjust height as needed
+    units = "in", 
+    res = 700)
+par(mar = c(0, 0, 0, 0))
+rg3 %>%
+  inner_join(new_sentiment) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("#fc8d59","#99d594"), 
+                   max.words = 30, title.size=1.5,match.color=TRUE)
+dev.off()
+
 par(mar = c(0, 0, 0, 0))
 rg3 %>%
   inner_join(new_sentiment) %>%

@@ -14,7 +14,7 @@
 
 
 rm(list=ls()) #clear environment
-setwd("C:/Users/Leo/GOM/Gulf of Mexico - Documents/Outreach/Fisherman Feedback_Something's Fishy/gag/2026") #adjust accordingly
+setwd("C:/Users/Leo/Documents/R working directory/Fisherman Feedback") #adjust accordingly
 library(ggplot2)
 library(tidyr)
 library(dplyr)
@@ -93,7 +93,7 @@ overall_sent_plot <- ggplot(overall_sent, aes(x = 1, y = prop, fill = Sentiment)
         panel.background = element_rect(fill = "white", color = NA)) #Comment out for no background
 
 print(overall_sent_plot)
-ggsave("Plots/Overall Sentiment.png", 
+ggsave("Broad Sentiment Plots/Overall Sentiment.png", 
        plot = overall_sent_plot,
        width = 8, #Adjust width as needed
        height = 8, #Adjust height as needed
@@ -144,7 +144,7 @@ stock_sent_plot <- ggplot(stock_sent, aes(x = 1, y = prop, fill = Sentiment)) +
         panel.background = element_rect(fill = "white", color = NA)) #Comment out for no background)
 
 print(stock_sent_plot)
-ggsave("Plots/Stock Condition Sentiment.png", 
+ggsave("Broad Sentiment Plots/Stock Condition Sentiment.png", 
        plot = stock_sent_plot,
        width = 8, #Adjust width as needed
        height = 8, #Adjust height as needed
@@ -194,7 +194,7 @@ sectorpieplot <- ggplot(num_sector, aes(x = 1, y = prop, fill = Fleet)) +
         panel.background = element_rect(fill = "white", color = NA)) #Comment out for no background)
 
 print(sectorpieplot)
-ggsave("Plots/Responses by Sector Pie.png", 
+ggsave("Broad Sentiment Plots/Responses by Sector Pie.png", 
        plot = sectorpieplot,
        width = 8, #Adjust width as needed
        height = 8, #Adjust height as needed
@@ -215,7 +215,7 @@ sectorbarplot <- ggplot(num_sector, aes(x = Fleet, y = Freq, fill = Fleet)) +
         panel.grid.major.y = element_line(),panel.grid.minor.y = element_line())
 
 print(sectorbarplot)
-ggsave("Plots/Responses by Sector Bar.png", 
+ggsave("Broad Sentiment Plots/Responses by Sector Bar.png", 
        plot = sectorbarplot,
        width = 12, #Adjust width as needed
        height = 8, #Adjust height as needed
@@ -260,7 +260,7 @@ sect_sent_plot <- ggplot(sectorsent, aes(x = Fleet, y = Freq, fill = Sentiment))
         panel.grid.major.x = element_blank(),panel.grid.minor.x = element_blank(),
         panel.grid.major.y = element_line(),panel.grid.minor.y = element_line())
 print(sect_sent_plot)
-ggsave("Plots/Overall Sentiment by Sector.png", 
+ggsave("Broad Sentiment Plots/Overall Sentiment by Sector.png", 
        plot = sect_sent_plot, 
        width = 12, #Adjust width as needed
        height = 8, #Adjust height as needed
@@ -306,7 +306,7 @@ sect_stock_sent_plot <- ggplot(sectorstock_sent, aes(x = Fleet, y = Freq, fill =
         panel.grid.major.y = element_line(),panel.grid.minor.y = element_line())
 print(sect_stock_sent_plot)
 #Save the plot to the filepath
-ggsave("Plots/Stock Condition Sentiment by Sector.png", 
+ggsave("Broad Sentiment Plots/Stock Condition Sentiment by Sector.png", 
        plot = sect_stock_sent_plot, 
        width = 12, #Adjust width as needed
        height = 8, #Adjust height as needed

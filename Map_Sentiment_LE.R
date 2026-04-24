@@ -22,9 +22,8 @@ library(sp)
 library(doBy)
 library(readxl)
 
-
+rm(list=ls())
 ### 2) import 
-#df <- read.csv("rsCommentsJF.csv",header=T, stringsAsFactors = FALSE)
 df <- read_excel("Gag_Fisherman Feedback_2026_Clean for analysis.xls")
 ### 2.1 duplicates check for duplicates here!!!
 
