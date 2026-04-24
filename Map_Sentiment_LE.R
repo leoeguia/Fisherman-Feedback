@@ -11,7 +11,7 @@ library(readr)
 library(leaflet)
 library(htmlwidgets)
 library(webshot)
-library(leaflet.esri) #Package no longer exists
+#library(leaflet.esri) #Package no longer exists
 library(leaflet.extras)
 library(doBy)
 library(leafem)
@@ -81,7 +81,7 @@ out4 <- arrange(out3, Location)
 
 
 nums <- data.frame(parse_number(out4$Location))
-out4$nums <- data.frame(parse_number(out4$Location))
+out4$nums <- parse_number(out4$Location)
 out5 <- subset(out4, out4$nums !="na")
 out5 <- arrange(out5, out5[,3])
 out6 <- data.frame(out5[,3], out5[,1])
@@ -238,10 +238,10 @@ m <- leaflet(gridShrimp, padding=25) %>% ## added padding for whitespace
 m
 
 ## save html to png
-saveWidget(m, "ResponsePlot.html", selfcontained = FALSE)
+saveWidget(m, "Map Plots/ResponsePlot.html", selfcontained = FALSE)
 # webshot("ResponsePlot.html", file = "ResponsePlot.png",
 #         cliprect = "viewport") Doesn't work correctly with padding, use below
-webshot("ResponsePlot.html", file = "ResponsePlot.png")
+webshot("Map Plots/ResponsePlot.html", file = "Map Plots/ResponsePlot.png")
 ############## 5: Sentiment 
 #### This section will produce two maps: 1) a map of the sentiment analysis using the Bing lexicon library
 ####  and 2) a manual analysis 
@@ -267,489 +267,29 @@ colnames(tmp2Out2)[9] <- "Abundance"
 colnames(tmp2Out2)[8] <- "Sentiment"
 
 ### Calculate sentiment for each grid
-if ("X1" %in% names(tmp2Out2)) {
-  #if ("X1" %in% names(tmp2Out2) & sum(tmp2Out2$X1 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999)
-  X1 <- subset(tmp2Out2,X1==1)
-  X1 <- select(X1,  Abundance, Sentiment, ID, X1)
-  X1wide <- dcast(X1, X1 ~ Sentiment, fun.aggregate = length, value.var = "X1")
-  names(X1wide)[names(X1wide) == "-1"] <- "Negative"
-  names(X1wide)[names(X1wide) == "0"] <- "Neutral"
-  names(X1wide)[names(X1wide) == "1"] <- "Positive"
-  colnames(X1wide)[1] <- "Area"
-  X1wide <- join(tmpWide,X1wide, type="full")
-  X1wide <- subset(X1wide, Area!=-9999)
-  X1wide$Area <- 1
-} else {
-  print("Variable does not exist.")
+Xout_list <- list()
+
+for (i in 1:21) {
+  var_name <- paste0("X", i)
+  if (var_name %in% names(tmp2Out2)) {
+    tmpWide <- data.frame(Area = -9999, Negative = -9999,Neutral = -9999,Positive = -9999)
+    X <- subset(tmp2Out2, tmp2Out2[[var_name]] == 1)
+    X <- select(X, Abundance, Sentiment, ID, all_of(var_name))
+    Xwide <- dcast(X, var_name ~ Sentiment, fun.aggregate = length, value.var = var_name)
+    names(Xwide)[names(Xwide) == "-1"] <- "Negative"
+    names(Xwide)[names(Xwide) == "0"]  <- "Neutral"
+    names(Xwide)[names(Xwide) == "1"]  <- "Positive"
+    colnames(Xwide)[1] <- "Area"
+    Xwide <- merge(tmpWide, Xwide, all = TRUE)
+    Xwide <- subset(Xwide, Area != -9999)
+    Xwide$Area <- i
+    Xout_list[[i]] <- Xwide
+  } else {
+    print(paste(var_name, "does not exist."))
+  }
 }
-
-if ("X2" %in% names(tmp2Out2)) {
-  #if ("X2" %in% names(tmp2Out2) & sum(tmp2Out2$X2 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X2 <- subset(tmp2Out2,X2==1)
-  X2 <- select(X2,  Abundance, Sentiment, ID, X2)
-  X2wide <- dcast(X2, X2 ~ Sentiment, fun.aggregate = length, value.var = "X2")
-  names(X2wide)[names(X2wide) == "-1"] <- "Negative"
-  names(X2wide)[names(X2wide) == "0"] <- "Neutral"
-  names(X2wide)[names(X2wide) == "1"] <- "Positive"
-  colnames(X2wide)[1] <- "Area"
-  X2wide <- join(tmpWide,X2wide, type="full")
-  X2wide <- subset(X2wide, Area!=-9999)
-  X2wide$Area <- 2
-} else {
-  print("Variable does not exist.")
-}
-
-if ("X3" %in% names(tmp2Out2)) {
-  #if ("X3" %in% names(tmp2Out2) & sum(tmp2Out2$X3 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X3 <- subset(tmp2Out2,X3==1)
-  X3 <- select(X3, Abundance, Sentiment, ID, X3)
-  X3wide <- dcast(X3, X3 ~ Sentiment, fun.aggregate = length, value.var = "X3")
-  names(X3wide)[names(X3wide) == "-1"] <- "Negative"
-  names(X3wide)[names(X3wide) == "0"] <- "Neutral"
-  names(X3wide)[names(X3wide) == "1"] <- "Positive"
-  colnames(X3wide)[1] <- "Area"
-  X3wide <- join(tmpWide,X3wide, type="full")
-  X3wide <- subset(X3wide, Area!=-9999)
-  X3wide$Area <- 3
-} else {
-  print("Variable does not exist.")
-}
-
-if ("X4" %in% names(tmp2Out2)) {
-  #if ("X4" %in% names(tmp2Out2) & sum(tmp2Out2$X4 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X4 <- subset(tmp2Out2,X4==1)
-  X4 <- select(X4, Abundance,  Sentiment, ID, X4)
-  X4wide <- dcast(X4, X4 ~ Sentiment, fun.aggregate = length, value.var = "X4")
-  names(X4wide)[names(X4wide) == "-1"] <- "Negative"
-  names(X4wide)[names(X4wide) == "0"] <- "Neutral"
-  names(X4wide)[names(X4wide) == "1"] <- "Positive"
-  colnames(X4wide)[1] <- "Area"
-  X4wide <- join(tmpWide,X4wide, type="full")
-  X4wide <- subset(X4wide, Area!=-9999)
-  X4wide$Area <- 4
-} else {
-  print("Variable does not exist.")
-}
-
-if ("X5" %in% names(tmp2Out2)) {
-  #if ("X5" %in% names(tmp2Out2) & sum(tmp2Out2$X5 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X5 <- subset(tmp2Out2,X5==1)
-  X5 <- select(X5,  Abundance,Sentiment, Sentiment, ID, X5)
-  X5wide <- dcast(X5, X5 ~ Sentiment, fun.aggregate = length, value.var = "X5")
-  names(X5wide)[names(X5wide) == "-1"] <- "Negative"
-  names(X5wide)[names(X5wide) == "0"] <- "Neutral"
-  names(X5wide)[names(X5wide) == "1"] <- "Positive"
-  colnames(X5wide)[1] <- "Area"
-  X5wide <- join(tmpWide,X5wide, type="full")
-  X5wide <- subset(X5wide, Area!=-9999)
-  X5wide$Area <- 5
-} else {
-  print("Variable does not exist.")
-}
-
-if ("X6" %in% names(tmp2Out2)) {
-  #if ("X6" %in% names(tmp2Out2) & sum(tmp2Out2$X6 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X6 <- subset(tmp2Out2,X6==1)
-  X6 <- select(X6,  Abundance,Sentiment, Sentiment, ID, X6)
-  X6wide <- dcast(X6, X6 ~ Sentiment, fun.aggregate = length, value.var = "X6")
-  names(X6wide)[names(X6wide) == "-1"] <- "Negative"
-  names(X6wide)[names(X6wide) == "0"] <- "Neutral"
-  names(X6wide)[names(X6wide) == "1"] <- "Positive"
-  colnames(X6wide)[1] <- "Area"
-  X6wide <- join(tmpWide,X6wide, type="full")
-  X6wide <- subset(X6wide, Area!=-9999)
-  X6wide$Area <- 6
-} else {
-  print("Variable does not exist.")
-}
-
-
-if ("X7" %in% names(tmp2Out2)) {
-  #if ("X7" %in% names(tmp2Out2) & sum(tmp2Out2$X7 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X7 <- subset(tmp2Out2,X7==1)
-  X7 <- select(X7,  Abundance,Sentiment, Sentiment, ID, X7)
-  X7wide <- dcast(X7, X7 ~ Sentiment, fun.aggregate = length, value.var = "X7")
-  names(X7wide)[names(X7wide) == "-1"] <- "Negative"
-  names(X7wide)[names(X7wide) == "0"] <- "Neutral"
-  names(X7wide)[names(X7wide) == "1"] <- "Positive"
-  colnames(X7wide)[1] <- "Area"
-  X7wide <- join(tmpWide,X7wide, type="full")
-  X7wide <- subset(X7wide, Area!=-9999)
-  X7wide$Area <- 7
-} else {
-  print("Variable does not exist.")
-}
-
-
-if ("X8" %in% names(tmp2Out2)) {
-  #if ("X8" %in% names(tmp2Out2) & sum(tmp2Out2$X8 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X8 <- subset(tmp2Out2,X8==1)
-  X8 <- select(X8,  Abundance,Sentiment, Sentiment, ID, X8)
-  X8wide <- dcast(X8, X8 ~ Sentiment, fun.aggregate = length, value.var = "X8")
-  names(X8wide)[names(X8wide) == "-1"] <- "Negative"
-  names(X8wide)[names(X8wide) == "0"] <- "Neutral"
-  names(X8wide)[names(X8wide) == "1"] <- "Positive"
-  colnames(X8wide)[1] <- "Area"
-  X8wide <- join(tmpWide,X8wide, type="full")
-  X8wide <- subset(X8wide, Area!=-9999)
-  X8wide$Area <- 8
-} else {
-  print("Variable does not exist.")
-}
-
-if ("X9" %in% names(tmp2Out2)) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X9 <- subset(tmp2Out2,X9==1)
-  X9 <- select(X9,  Abundance,Sentiment, Sentiment, ID, X9)
-  X9wide <- dcast(X9, X9 ~ Sentiment, fun.aggregate = length, value.var = "X9")
-  names(X9wide)[names(X9wide) == "-1"] <- "Negative"
-  names(X9wide)[names(X9wide) == "0"] <- "Neutral"
-  names(X9wide)[names(X9wide) == "1"] <- "Positive"
-  colnames(X9wide)[1] <- "Area"
-  X9wide <- join(tmpWide,X9wide, type="full")
-  X9wide <- subset(X9wide, Area!=-9999)
-  X9wide$Area <- 9
-} else {
-  print("Variable does not exist.")
-}
-
-
-if("X10" %in% names(tmp2Out2)) {
-  # if ("X10" %in% names(tmp2Out2) & sum(tmp2Out2$X10 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X10 <- subset(tmp2Out2,X10==1)
-  
-  
-  X10 <- select(X10,  Abundance,Sentiment, Sentiment, ID, X10)
-  X10wide <- dcast(X10, X10 ~ Sentiment, fun.aggregate = length, value.var = "X10")
-  names(X10wide)[names(X10wide) == "-1"] <- "Negative"
-  names(X10wide)[names(X10wide) == "0"] <- "Neutral"
-  names(X10wide)[names(X10wide) == "1"] <- "Positive"
-  colnames(X10wide)[1] <- "Area"
-  X10wide <- join(tmpWide,X10wide, type="full")
-  X10wide <- subset(X10wide, Area!=-9999)
-  X10wide$Area <- 10
-} else {
-  print("Variable does not exist.")
-}
-
-
-if ("X11" %in% names(tmp2Out2)) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X11 <- subset(tmp2Out2,X11==1)
-  X11 <- select(X11,  Abundance,Sentiment, Sentiment, ID, X11)
-  X11wide <- dcast(X11, X11 ~ Sentiment, fun.aggregate = length, value.var = "X11")
-  names(X11wide)[names(X11wide) == "-1"] <- "Negative"
-  names(X11wide)[names(X11wide) == "0"] <- "Neutral"
-  names(X11wide)[names(X11wide) == "1"] <- "Positive"
-  colnames(X11wide)[1] <- "Area"
-  X11wide <- join(tmpWide,X11wide, type="full")
-  X11wide <- subset(X11wide, Area!=-9999)
-  X11wide$Area <- 11
-} else {
-  print("Variable does not exist.")
-}
-
-
-if ("X12" %in% names(tmp2Out2)) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X12 <- subset(tmp2Out2,X12==1)
-  X12 <- select(X12,  Abundance,Sentiment, Sentiment, ID, X12)
-  X12wide <- dcast(X12, X12 ~ Sentiment, fun.aggregate = length, value.var = "X12")
-  names(X12wide)[names(X12wide) == "-1"] <- "Negative"
-  names(X12wide)[names(X12wide) == "0"] <- "Neutral"
-  names(X12wide)[names(X12wide) == "1"] <- "Positive"
-  colnames(X12wide)[1] <- "Area"
-  X12wide <- join(tmpWide,X12wide, type="full")
-  X12wide <- subset(X12wide, Area!=-9999)
-  X12wide$Area <- 12
-} else {
-  print("Variable does not exist.")
-}
-
-
-if ("X13" %in% names(tmp2Out2)) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X13 <- subset(tmp2Out2,X13==1)
-  X13 <- select(X13,  Abundance,Sentiment, Sentiment, ID, X13)
-  X13wide <- dcast(X13, X13 ~ Sentiment, fun.aggregate = length, value.var = "X13")
-  names(X13wide)[names(X13wide) == "-1"] <- "Negative"
-  names(X13wide)[names(X13wide) == "0"] <- "Neutral"
-  names(X13wide)[names(X13wide) == "1"] <- "Positive"
-  colnames(X13wide)[1] <- "Area"
-  X13wide <- join(tmpWide,X13wide, type="full")
-  X13wide <- subset(X13wide, Area!=-9999)
-  X13wide$Area <- 13
-} else {
-  print("Variable does not exist.")
-}
-
-
-if ("X14" %in% names(tmp2Out2)) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X14 <- subset(tmp2Out2,X14==1)
-  X14 <- select(X14,  Abundance,Sentiment, Sentiment, ID, X14)
-  X14wide <- dcast(X14, X14 ~ Sentiment, fun.aggregate = length, value.var = "X14")
-  names(X14wide)[names(X14wide) == "-1"] <- "Negative"
-  names(X14wide)[names(X14wide) == "0"] <- "Neutral"
-  names(X14wide)[names(X14wide) == "1"] <- "Positive"
-  colnames(X14wide)[1] <- "Area"
-  X14wide <- join(tmpWide,X14wide, type="full")
-  X14wide <- subset(X14wide, Area!=-9999)
-  X14wide$Area <- 14
-} else {
-  print("Variable does not exist.")
-}
-
-
-if ("X15" %in% names(tmp2Out2)) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X15 <- subset(tmp2Out2,X15==1)
-  X15 <- select(X15,  Abundance,Sentiment, Sentiment, ID, X15)
-  X15wide <- dcast(X15, X15 ~ Sentiment, fun.aggregate = length, value.var = "X15")
-  names(X15wide)[names(X15wide) == "-1"] <- "Negative"
-  names(X15wide)[names(X15wide) == "0"] <- "Neutral"
-  names(X15wide)[names(X15wide) == "1"] <- "Positive"
-  colnames(X15wide)[1] <- "Area"
-  X15wide <- join(tmpWide,X15wide, type="full")
-  X15wide <- subset(X15wide, Area!=-9999)
-  X15wide$Area <- 15
-} else {
-  print("Variable does not exist.")
-}
-
-
-if ("X16" %in% names(tmp2Out2)) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X16 <- subset(tmp2Out2,X16==1)
-  X16 <- select(X16,  Abundance,Sentiment, Sentiment, ID, X16)
-  X16wide <- dcast(X16, X16 ~ Sentiment, fun.aggregate = length, value.var = "X16")
-  names(X16wide)[names(X16wide) == "-1"] <- "Negative"
-  names(X16wide)[names(X16wide) == "0"] <- "Neutral"
-  names(X16wide)[names(X16wide) == "1"] <- "Positive"
-  colnames(X16wide)[1] <- "Area"
-  X16wide <- join(tmpWide,X16wide, type="full")
-  X16wide <- subset(X16wide, Area!=-9999)
-  X16wide$Area <- 16
-} else {
-  print("Variable does not exist.")
-}
-
-
-if ("X17" %in% names(tmp2Out2)) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X17 <- subset(tmp2Out2,X17==1)
-  X17 <- select(X17,  Abundance,Sentiment, Sentiment, ID, X17)
-  X17wide <- dcast(X17, X17 ~ Sentiment, fun.aggregate = length, value.var = "X17")
-  names(X17wide)[names(X17wide) == "-1"] <- "Negative"
-  names(X17wide)[names(X17wide) == "0"] <- "Neutral"
-  names(X17wide)[names(X17wide) == "1"] <- "Positive"
-  colnames(X17wide)[1] <- "Area"
-  X17wide <- join(tmpWide,X17wide, type="full")
-  X17wide <- subset(X17wide, Area!=-9999)
-  X17wide$Area <- 17
-} else {
-  print("Variable does not exist.")
-}
-
-#if ("X18" %in% names(tmp2Out2) ) {
-if ("X18" %in% names(tmp2Out2) & sum(tmp2Out2$X18 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X18 <- subset(tmp2Out2,X18==1)
-  X18 <- select(X18,  Abundance,Sentiment, Sentiment, ID, X18)
-  X18wide <- dcast(X18, X18 ~ Sentiment, fun.aggregate = length, value.var = "X18")
-  names(X18wide)[names(X18wide) == "-1"] <- "Negative"
-  names(X18wide)[names(X18wide) == "0"] <- "Neutral"
-  names(X18wide)[names(X18wide) == "1"] <- "Positive"
-  colnames(X18wide)[1] <- "Area"
-  X18wide <- join(tmpWide,X18wide, type="full")
-  X18wide <- subset(X18wide, Area!=-9999)
-  X18wide$Area <- 18
-} else {
-  print("Variable does not exist.")
-}
-
-if ("X19" %in% names(tmp2Out2)) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X19 <- subset(tmp2Out2,X19==1)
-  X19 <- select(X19,  Abundance,Abundance, Sentiment, ID, X19)
-  X19wide <- dcast(X19, X19 ~ Sentiment, fun.aggregate = length, value.var = "X19")
-  names(X19wide)[names(X19wide) == "-1"] <- "Negative"
-  names(X19wide)[names(X19wide) == "0"] <- "Neutral"
-  names(X19wide)[names(X19wide) == "1"] <- "Positive"
-  colnames(X19wide)[1] <- "Area"
-  X19wide <- join(tmpWide,X19wide, type="full")
-  X19wide <- subset(X19wide, Area!=-9999)
-  X19wide$Area <- 19
-} else {
-  print("Variable does not exist.")
-}
-
-if ("X20" %in% names(tmp2Out2)) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X20 <- subset(tmp2Out2,X20==1)
-  X20 <- select(X20,  Abundance, Sentiment, ID, X20)
-  X20wide <- dcast(X20, X20 ~ Sentiment, fun.aggregate = length, value.var = "X20")
-  names(X20wide)[names(X20wide) == "-1"] <- "Negative"
-  names(X20wide)[names(X20wide) == "0"] <- "Neutral"
-  names(X20wide)[names(X20wide) == "1"] <- "Positive"
-  colnames(X20wide)[1] <- "Area"
-  X20wide <- join(tmpWide,X20wide, type="full")
-  X20wide <- subset(X20wide, Area!=-9999)
-  X20wide$Area <- 20
-} else {
-  print("Variable does not exist.")
-}
-
-
-if ("X21" %in% names(tmp2Out2)) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X21 <- subset(tmp2Out2,X21==1)
-  X21 <- select(X21,  Abundance, Sentiment, ID, X21)
-  X21wide <- dcast(X21, X21 ~ Sentiment, fun.aggregate = length, value.var = "X21")
-  names(X21wide)[names(X21wide) == "-1"] <- "Negative"
-  names(X21wide)[names(X21wide) == "0"] <- "Neutral"
-  names(X21wide)[names(X21wide) == "1"] <- "Positive"
-  colnames(X21wide)[1] <- "Area"
-  X21wide <- join(tmpWide,X21wide, type="full")
-  X21wide <- subset(X21wide, Area!=-9999)
-  X21wide$Area <- 21
-} else {
-  print("Variable does not exist.")
-}
-
-
 #### automate the rbind
-Xout <- c()
-if (exists("X1wide")) {
-  Xout <- rbind(Xout, X1wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X2wide")) {
-  Xout <- rbind(Xout, X2wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X3wide")) {
-  Xout <- rbind(Xout, X3wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X4wide")) {
-  Xout <- rbind(Xout, X4wide )
-} else {
-  print("Object does not exist.")
-}
-if (exists("X5wide")) {
-  Xout <- rbind(Xout, X5wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X6wide")) {
-  Xout <- rbind(Xout, X6wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X7wide")) {
-  Xout <- rbind(Xout, X7wide )
-} else {
-  print("Object does not exist.")
-}
-if (exists("X8wide")) {
-  Xout <- rbind(Xout, X8wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X9wide")) {
-  Xout <- rbind(Xout, X9wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X10wide")) {
-  Xout <- rbind(Xout, X10wide )
-} else {
-  print("Object does not exist.")
-}
-if (exists("X11wide")) {
-  Xout <- rbind(Xout, X11wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X12wide")) {
-  Xout <- rbind(Xout, X12wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X13wide")) {
-  Xout <- rbind(Xout, X13wide )
-} else {
-  print("Object does not exist.")
-}
-if (exists("X14wide")) {
-  Xout <- rbind(Xout, X14wide )
-} else {
-  print("Object does not exist.")
-}
-
-
-if (exists("X15wide")) {
-  Xout <- rbind(Xout, X15wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X16wide")) {
-  Xout <- rbind(Xout, X16wide )
-} else {
-  print("Object does not exist.")
-}
-if (exists("X17wide")) {
-  Xout <- rbind(Xout, X17wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X18wide")) {
-  Xout <- rbind(Xout, X18wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X19wide")) {
-  Xout <- rbind(Xout, X19wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X20wide")) {
-  Xout <- rbind(Xout, X20wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X21wide")) {
-  Xout <- rbind(Xout, X21wide )
-} else {
-  print("Object does not exist.")
-}
+Xout <- do.call(rbind, Xout_list)
 
 
 ### Replace na's with 0.  In this case Na's are actual zeros
@@ -836,8 +376,8 @@ m <- leaflet(pieGrid, padding=25) %>%
 m
 
 ## save html to png
-saveWidget(m, "Sentiment.html", selfcontained = FALSE)
-webshot("Sentiment.html", file = "Sentiment.png")
+saveWidget(m, "Map Plots/Sentiment.html", selfcontained = FALSE)
+webshot("Map Plots/Sentiment.html", file = "Map Plots/Sentiment.png")
 
 
 ######################################## Manual Sentiment related to abundance ###########
@@ -851,502 +391,31 @@ colnames(tmp2Out2)[colnames(tmp2Out2) == "Final..Stock.Condition"] <- "Final.Sto
 
 
 ### create a template dataframe
-#if ("X1" %in% names(tmp2Out2)) {
-if ("X1" %in% names(tmp2Out2) & sum(tmp2Out2$X1 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999)
-  X1 <- subset(tmp2Out2,X1==1)
-  X1 <- select(X1,  Abundance, Final.Stock.Condition.Sentiment, ID, X1)
-  
-  X1wide <- dcast(X1, X1 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X1")
-  names(X1wide)[names(X1wide) == "-1"] <- "Negative"
-  names(X1wide)[names(X1wide) == "0"] <- "Neutral"
-  names(X1wide)[names(X1wide) == "1"] <- "Positive"
-  colnames(X1wide)[1] <- "Area"
-  X1wide <- join(tmpWide,X1wide, type="full")
-  X1wide <- subset(X1wide, Area!=-9999)
-  X1wide$Area <- 1
-} else {
-  print("Variable does not exist.")
+Xout_list <- list()
+
+for (i in 1:21) {
+  var_name <- paste0("X", i)
+  if (var_name %in% names(tmp2Out2)& sum(tmp2Out2[[var_name]] > 0)) {
+    tmpWide <- data.frame(Area = -9999, Negative = -9999,Neutral = -9999,Positive = -9999)
+    X <- subset(tmp2Out2, tmp2Out2[[var_name]] == 1)
+    X <- select(X, Abundance,Final.Stock.Condition.Sentiment, Sentiment, ID, all_of(var_name))
+    X$Final.Stock.Condition.Sentiment <- factor(X$Final.Stock.Condition.Sentiment,levels = c(-1, 0, 1))
+    Xwide <- dcast(X, var_name ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = var_name)
+    names(Xwide)[names(Xwide) == "-1"] <- "Negative"
+    names(Xwide)[names(Xwide) == "0"]  <- "Neutral"
+    names(Xwide)[names(Xwide) == "1"]  <- "Positive"
+    colnames(Xwide)[1] <- "Area"
+    Xwide <- merge(tmpWide, Xwide, all = TRUE)
+    Xwide <- subset(Xwide, Area != -9999)
+    Xwide$Area <- i
+    Xout_list[[i]] <- Xwide
+  } else {
+    print(paste(var_name, "does not exist."))
+  }
 }
-
-
-
-#if ("X2" %in% names(tmp2Out2)) {
-if ("X2" %in% names(tmp2Out2) & sum(tmp2Out2$X2 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X2 <- subset(tmp2Out2,X2==1)
-  X2 <- select(X2,  Abundance, Final.Stock.Condition.Sentiment, ID, X2)
-  X2wide <- dcast(X2, X2 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X2")
-  names(X2wide)[names(X2wide) == "-1"] <- "Negative"
-  names(X2wide)[names(X2wide) == "0"] <- "Neutral"
-  names(X2wide)[names(X2wide) == "1"] <- "Positive"
-  colnames(X2wide)[1] <- "Area"
-  X2wide <- join(tmpWide,X2wide, type="full")
-  X2wide <- subset(X2wide, Area!=-9999)
-  X2wide$Area <- 2
-} else {
-  print("Variable does not exist.")
-}
-
-#if ("X3" %in% names(tmp2Out2)) {
-if ("X3" %in% names(tmp2Out2) & sum(tmp2Out2$X3 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X3 <- subset(tmp2Out2,X3==1)
-  X3 <- select(X3, Abundance, Final.Stock.Condition.Sentiment, ID, X3)
-  X3wide <- dcast(X3, X3 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X3")
-  names(X3wide)[names(X3wide) == "-1"] <- "Negative"
-  names(X3wide)[names(X3wide) == "0"] <- "Neutral"
-  names(X3wide)[names(X3wide) == "1"] <- "Positive"
-  colnames(X3wide)[1] <- "Area"
-  X3wide <- join(tmpWide,X3wide, type="full")
-  X3wide <- subset(X3wide, Area!=-9999)
-  X3wide$Area <- 3
-} else {
-  print("Variable does not exist.")
-}
-
-#if ("X4" %in% names(tmp2Out2)) {
-if ("X4" %in% names(tmp2Out2) & sum(tmp2Out2$X4 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X4 <- subset(tmp2Out2,X4==1)
-  X4 <- select(X4, Abundance,  Final.Stock.Condition.Sentiment, ID, X4)
-  X4wide <- dcast(X4, X4 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X4")
-  names(X4wide)[names(X4wide) == "-1"] <- "Negative"
-  names(X4wide)[names(X4wide) == "0"] <- "Neutral"
-  names(X4wide)[names(X4wide) == "1"] <- "Positive"
-  colnames(X4wide)[1] <- "Area"
-  X4wide <- join(tmpWide,X4wide, type="full")
-  X4wide <- subset(X4wide, Area!=-9999)
-  X4wide$Area <- 4
-} else {
-  print("Variable does not exist.")
-}
-
-#if ("X5" %in% names(tmp2Out2)) {
-if ("X5" %in% names(tmp2Out2) & sum(tmp2Out2$X5 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X5 <- subset(tmp2Out2,X5==1)
-  X5 <- select(X5,  Abundance,Final.Stock.Condition.Sentiment, Sentiment, ID, X5)
-  X5wide <- dcast(X5, X5 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X5")
-  names(X5wide)[names(X5wide) == "-1"] <- "Negative"
-  names(X5wide)[names(X5wide) == "0"] <- "Neutral"
-  names(X5wide)[names(X5wide) == "1"] <- "Positive"
-  colnames(X5wide)[1] <- "Area"
-  X5wide <- join(tmpWide,X5wide, type="full")
-  X5wide <- subset(X5wide, Area!=-9999)
-  X5wide$Area <- 5
-} else {
-  print("Variable does not exist.")
-}
-
-#if ("X6" %in% names(tmp2Out2)) {
-if ("X6" %in% names(tmp2Out2) & sum(tmp2Out2$X6 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X6 <- subset(tmp2Out2,X6==1)
-  X6 <- select(X6,  Abundance,Final.Stock.Condition.Sentiment, Sentiment, ID, X6)
-  X6wide <- dcast(X6, X6 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X6")
-  names(X6wide)[names(X6wide) == "-1"] <- "Negative"
-  names(X6wide)[names(X6wide) == "0"] <- "Neutral"
-  names(X6wide)[names(X6wide) == "1"] <- "Positive"
-  colnames(X6wide)[1] <- "Area"
-  X6wide <- join(tmpWide,X6wide, type="full")
-  X6wide <- subset(X6wide, Area!=-9999)
-  X6wide$Area <- 6
-} else {
-  print("Variable does not exist.")
-}
-
-
-#if ("X7" %in% names(tmp2Out2)) {
-if ("X7" %in% names(tmp2Out2) & sum(tmp2Out2$X7 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X7 <- subset(tmp2Out2,X7==1)
-  X7 <- select(X7,  Abundance,Final.Stock.Condition.Sentiment, Sentiment, ID, X7)
-  X7wide <- dcast(X7, X7 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X7")
-  names(X7wide)[names(X7wide) == "-1"] <- "Negative"
-  names(X7wide)[names(X7wide) == "0"] <- "Neutral"
-  names(X7wide)[names(X7wide) == "1"] <- "Positive"
-  colnames(X7wide)[1] <- "Area"
-  X7wide <- join(tmpWide,X7wide, type="full")
-  X7wide <- subset(X7wide, Area!=-9999)
-  X7wide$Area <- 7
-} else {
-  print("Variable does not exist.")
-}
-
-
-#if ("X8" %in% names(tmp2Out2)) {
-if ("X8" %in% names(tmp2Out2) & sum(tmp2Out2$X8 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X8 <- subset(tmp2Out2,X8==1)
-  X8 <- select(X8,  Abundance,Final.Stock.Condition.Sentiment, Sentiment, ID, X8)
-  X8wide <- dcast(X8, X8 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X8")
-  names(X8wide)[names(X8wide) == "-1"] <- "Negative"
-  names(X8wide)[names(X8wide) == "0"] <- "Neutral"
-  names(X8wide)[names(X8wide) == "1"] <- "Positive"
-  colnames(X8wide)[1] <- "Area"
-  X8wide <- join(tmpWide,X8wide, type="full")
-  X8wide <- subset(X8wide, Area!=-9999)
-  X8wide$Area <- 8
-} else {
-  print("Variable does not exist.")
-}
-
-#if ("X9" %in% names(tmp2Out2)) {
-if ("X9" %in% names(tmp2Out2) & sum(tmp2Out2$X9 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X9 <- subset(tmp2Out2,X9==1)
-  X9 <- select(X9,  Abundance,Final.Stock.Condition.Sentiment, Sentiment, ID, X9)
-  X9wide <- dcast(X9, X9 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X9")
-  names(X9wide)[names(X9wide) == "-1"] <- "Negative"
-  names(X9wide)[names(X9wide) == "0"] <- "Neutral"
-  names(X9wide)[names(X9wide) == "1"] <- "Positive"
-  colnames(X9wide)[1] <- "Area"
-  X9wide <- join(tmpWide,X9wide, type="full")
-  X9wide <- subset(X9wide, Area!=-9999)
-  X9wide$Area <- 9
-} else {
-  print("Variable does not exist.")
-}
-
-
-#if ("X10" %in% names(tmp2Out2)) {
-if ("X10" %in% names(tmp2Out2) & sum(tmp2Out2$X10 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X10 <- subset(tmp2Out2,X10==1)
-  X10 <- select(X10,  Abundance,Final.Stock.Condition.Sentiment, Sentiment, ID, X10)
-  X10wide <- dcast(X10, X10 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X10")
-  names(X10wide)[names(X10wide) == "-1"] <- "Negative"
-  names(X10wide)[names(X10wide) == "0"] <- "Neutral"
-  names(X10wide)[names(X10wide) == "1"] <- "Positive"
-  colnames(X10wide)[1] <- "Area"
-  X10wide <- join(tmpWide,X10wide, type="full")
-  X10wide <- subset(X10wide, Area!=-9999)
-  X10wide$Area <- 10
-} else {
-  print("Variable does not exist.")
-}
-
-
-#if ("X11" %in% names(tmp2Out2)) {
-if ("X11" %in% names(tmp2Out2) & sum(tmp2Out2$X11 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X11 <- subset(tmp2Out2,X11==1)
-  X11 <- select(X11,  Abundance,Final.Stock.Condition.Sentiment, Sentiment, ID, X11)
-  X11wide <- dcast(X11, X11 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X11")
-  names(X11wide)[names(X11wide) == "-1"] <- "Negative"
-  names(X11wide)[names(X11wide) == "0"] <- "Neutral"
-  names(X11wide)[names(X11wide) == "1"] <- "Positive"
-  colnames(X11wide)[1] <- "Area"
-  X11wide <- join(tmpWide,X11wide, type="full")
-  X11wide <- subset(X11wide, Area!=-9999)
-  X11wide$Area <- 11
-} else {
-  print("Variable does not exist.")
-}
-
-
-#if ("X12" %in% names(tmp2Out2)) {
-if ("X12" %in% names(tmp2Out2) & sum(tmp2Out2$X12 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X12 <- subset(tmp2Out2,X12==1)
-  X12 <- select(X12,  Abundance,Final.Stock.Condition.Sentiment, Sentiment, ID, X12)
-  X12wide <- dcast(X12, X12 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X12")
-  names(X12wide)[names(X12wide) == "-1"] <- "Negative"
-  names(X12wide)[names(X12wide) == "0"] <- "Neutral"
-  names(X12wide)[names(X12wide) == "1"] <- "Positive"
-  colnames(X12wide)[1] <- "Area"
-  X12wide <- join(tmpWide,X12wide, type="full")
-  X12wide <- subset(X12wide, Area!=-9999)
-  X12wide$Area <- 12
-} else {
-  print("Variable does not exist.")
-}
-
-
-#if ("X13" %in% names(tmp2Out2)) {
-if ("X13" %in% names(tmp2Out2) & sum(tmp2Out2$X13 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X13 <- subset(tmp2Out2,X13==1)
-  X13 <- select(X13,  Abundance,Final.Stock.Condition.Sentiment, Sentiment, ID, X13)
-  X13wide <- dcast(X13, X13 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X13")
-  names(X13wide)[names(X13wide) == "-1"] <- "Negative"
-  names(X13wide)[names(X13wide) == "0"] <- "Neutral"
-  names(X13wide)[names(X13wide) == "1"] <- "Positive"
-  colnames(X13wide)[1] <- "Area"
-  X13wide <- join(tmpWide,X13wide, type="full")
-  X13wide <- subset(X13wide, Area!=-9999)
-  X13wide$Area <- 13
-} else {
-  print("Variable does not exist.")
-}
-
-
-#if ("X14" %in% names(tmp2Out2)) {
-if ("X14" %in% names(tmp2Out2) & sum(tmp2Out2$X14 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X14 <- subset(tmp2Out2,X14==1)
-  X14 <- select(X14,  Abundance,Final.Stock.Condition.Sentiment, Sentiment, ID, X14)
-  X14wide <- dcast(X14, X14 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X14")
-  names(X14wide)[names(X14wide) == "-1"] <- "Negative"
-  names(X14wide)[names(X14wide) == "0"] <- "Neutral"
-  names(X14wide)[names(X14wide) == "1"] <- "Positive"
-  colnames(X14wide)[1] <- "Area"
-  X14wide <- join(tmpWide,X14wide, type="full")
-  X14wide <- subset(X14wide, Area!=-9999)
-  X14wide$Area <- 14
-} else {
-  print("Variable does not exist.")
-}
-
-
-#if ("X15" %in% names(tmp2Out2)) {
-if ("X15" %in% names(tmp2Out2) & sum(tmp2Out2$X15 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X15 <- subset(tmp2Out2,X15==1)
-  X15 <- select(X15,  Abundance,Final.Stock.Condition.Sentiment, Sentiment, ID, X15)
-  X15wide <- dcast(X15, X15 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X15")
-  names(X15wide)[names(X15wide) == "-1"] <- "Negative"
-  names(X15wide)[names(X15wide) == "0"] <- "Neutral"
-  names(X15wide)[names(X15wide) == "1"] <- "Positive"
-  colnames(X15wide)[1] <- "Area"
-  X15wide <- join(tmpWide,X15wide, type="full")
-  X15wide <- subset(X15wide, Area!=-9999)
-  X15wide$Area <- 15
-} else {
-  print("Variable does not exist.")
-}
-
-
-#if ("X16" %in% names(tmp2Out2)) {
-if ("X16" %in% names(tmp2Out2) & sum(tmp2Out2$X16 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X16 <- subset(tmp2Out2,X16==1)
-  X16 <- select(X16,  Abundance,Final.Stock.Condition.Sentiment, Sentiment, ID, X16)
-  X16wide <- dcast(X16, X16 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X16")
-  names(X16wide)[names(X16wide) == "-1"] <- "Negative"
-  names(X16wide)[names(X16wide) == "0"] <- "Neutral"
-  names(X16wide)[names(X16wide) == "1"] <- "Positive"
-  colnames(X16wide)[1] <- "Area"
-  X16wide <- join(tmpWide,X16wide, type="full")
-  X16wide <- subset(X16wide, Area!=-9999)
-  X16wide$Area <- 16
-} else {
-  print("Variable does not exist.")
-}
-
-
-#if ("X17" %in% names(tmp2Out2)) {
-if ("X17" %in% names(tmp2Out2) & sum(tmp2Out2$X17 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X17 <- subset(tmp2Out2,X17==1)
-  X17 <- select(X17,  Abundance,Final.Stock.Condition.Sentiment, Sentiment, ID, X17)
-  X17wide <- dcast(X17, X17 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X17")
-  names(X17wide)[names(X17wide) == "-1"] <- "Negative"
-  names(X17wide)[names(X17wide) == "0"] <- "Neutral"
-  names(X17wide)[names(X17wide) == "1"] <- "Positive"
-  colnames(X17wide)[1] <- "Area"
-  X17wide <- join(tmpWide,X17wide, type="full")
-  X17wide <- subset(X17wide, Area!=-9999)
-  X17wide$Area <- 17
-} else {
-  print("Variable does not exist.")
-}
-
-#if ("X18" %in% names(tmp2Out2)) {
-if ("X18" %in% names(tmp2Out2) & sum(tmp2Out2$X18 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X18 <- subset(tmp2Out2,X18==1)
-  X18 <- select(X18,  Abundance,Final.Stock.Condition.Sentiment, Sentiment, ID, X18)
-  X18wide <- dcast(X18, X18 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X18")
-  names(X18wide)[names(X18wide) == "-1"] <- "Negative"
-  names(X18wide)[names(X18wide) == "0"] <- "Neutral"
-  names(X18wide)[names(X18wide) == "1"] <- "Positive"
-  colnames(X18wide)[1] <- "Area"
-  X18wide <- join(tmpWide,X18wide, type="full")
-  X18wide <- subset(X18wide, Area!=-9999)
-  X18wide$Area <- 18
-} else {
-  print("Variable does not exist.")
-}
-
-#if ("X19" %in% names(tmp2Out2)) {
-if ("X19" %in% names(tmp2Out2) & sum(tmp2Out2$X19 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X19 <- subset(tmp2Out2,X19==1)
-  X19 <- select(X19,  Abundance,Abundance, Final.Stock.Condition.Sentiment, ID, X19)
-  X19wide <- dcast(X19, X19 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X19")
-  names(X19wide)[names(X19wide) == "-1"] <- "Negative"
-  names(X19wide)[names(X19wide) == "0"] <- "Neutral"
-  names(X19wide)[names(X19wide) == "1"] <- "Positive"
-  colnames(X19wide)[1] <- "Area"
-  X19wide <- join(tmpWide,X19wide, type="full")
-  X19wide <- subset(X19wide, Area!=-9999)
-  X19wide$Area <- 19
-} else {
-  print("Variable does not exist.")
-}
-
-#if ("X20" %in% names(tmp2Out2)) {
-if ("X20" %in% names(tmp2Out2) & sum(tmp2Out2$X20 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X20 <- subset(tmp2Out2,X20==1)
-  X20 <- select(X20,  Abundance, Final.Stock.Condition.Sentiment, ID, X20)
-  X20wide <- dcast(X20, X20 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X20")
-  names(X20wide)[names(X20wide) == "-1"] <- "Negative"
-  names(X20wide)[names(X20wide) == "0"] <- "Neutral"
-  names(X20wide)[names(X20wide) == "1"] <- "Positive"
-  colnames(X20wide)[1] <- "Area"
-  X20wide <- join(tmpWide,X20wide, type="full")
-  X20wide <- subset(X20wide, Area!=-9999)
-  X20wide$Area <- 20
-} else {
-  print("Variable does not exist.")
-}
-
-
-#if ("X21" %in% names(tmp2Out2)) {
-if ("X21" %in% names(tmp2Out2) & sum(tmp2Out2$X21 > 0) ) {
-  tmpWide <- data.frame(Area=-9999, Negative = -9999, Neutral=-9999, Positive=-9999 )
-  X21 <- subset(tmp2Out2,X21==1)
-  X21 <- select(X21,  Abundance, Final.Stock.Condition.Sentiment, ID, X21)
-  X21wide <- dcast(X21, X21 ~ Final.Stock.Condition.Sentiment, fun.aggregate = length, value.var = "X21")
-  names(X21wide)[names(X21wide) == "-1"] <- "Negative"
-  names(X21wide)[names(X21wide) == "0"] <- "Neutral"
-  names(X21wide)[names(X21wide) == "1"] <- "Positive"
-  colnames(X21wide)[1] <- "Area"
-  X21wide <- join(tmpWide,X21wide, type="full")
-  X21wide <- subset(X21wide, Area!=-9999)
-  X21wide$Area <- 21
-} else {
-  print("Variable does not exist.")
-}
-
-
 #### automate the rbind
-Xout <- c()
-if (exists("X1wide")) {
-  Xout <- rbind(Xout, X1wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X2wide")) {
-  Xout <- rbind(Xout, X2wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X3wide")) {
-  Xout <- rbind(Xout, X3wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X4wide")) {
-  Xout <- rbind(Xout, X4wide )
-} else {
-  print("Object does not exist.")
-}
-if (exists("X5wide")) {
-  Xout <- rbind(Xout, X5wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X6wide")) {
-  Xout <- rbind(Xout, X6wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X7wide")) {
-  Xout <- rbind(Xout, X7wide )
-} else {
-  print("Object does not exist.")
-}
-if (exists("X8wide")) {
-  Xout <- rbind(Xout, X8wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X9wide")) {
-  Xout <- rbind(Xout, X9wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X10wide")) {
-  Xout <- rbind(Xout, X10wide )
-} else {
-  print("Object does not exist.")
-}
-if (exists("X11wide")) {
-  Xout <- rbind(Xout, X11wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X12wide")) {
-  Xout <- rbind(Xout, X12wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X13wide")) {
-  Xout <- rbind(Xout, X13wide )
-} else {
-  print("Object does not exist.")
-}
-if (exists("X14wide")) {
-  Xout <- rbind(Xout, X14wide )
-} else {
-  print("Object does not exist.")
-}
-
-
-if (exists("X15wide")) {
-  Xout <- rbind(Xout, X15wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X16wide")) {
-  Xout <- rbind(Xout, X16wide )
-} else {
-  print("Object does not exist.")
-}
-if (exists("X17wide")) {
-  Xout <- rbind(Xout, X17wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X18wide")) {
-  Xout <- rbind(Xout, X18wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X19wide")) {
-  Xout <- rbind(Xout, X19wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X20wide")) {
-  Xout <- rbind(Xout, X20wide )
-} else {
-  print("Object does not exist.")
-}
-
-if (exists("X21wide")) {
-  Xout <- rbind(Xout, X21wide )
-} else {
-  print("Object does not exist.")
-}
-
+Xout <- do.call(rbind, Xout_list)
+Xout <- Xout[,c("Area", "Negative", "Neutral", "Positive")]
 ### Replace na's with 0.  In this case Na's are actual zeros
 Xout[is.na(Xout)] <- 0
 
@@ -1419,12 +488,12 @@ m <- leaflet(pieGrid, padding=25) %>%
     #label = ~paste("n = ", nLabels[,8]),
     labelOptions = labelOptions(noHide = T, textOnly = TRUE)) %>% 
   removeMapJunk( "zoomControl") %>% ### remove zoom control for export
-  addLogo("North.png", src = "local",position = "bottomright", alpha = 0.3)
+  addLogo("North.png", position = "bottomright", alpha = 0.3)
 m
 
 ## save html to png
-saveWidget(m, "SentimentAbundance.html", selfcontained = FALSE)
-webshot("SentimentAbundance.html", file = "SentimentAbundance.png")
+saveWidget(m, "Map Plots/SentimentAbundance.html", selfcontained = FALSE)
+webshot("Map Plots/SentimentAbundance.html", file = "Map Plots/SentimentAbundance.png")
 
 
 ###########################################################################################
