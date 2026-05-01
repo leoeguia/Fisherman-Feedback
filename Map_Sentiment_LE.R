@@ -298,8 +298,10 @@ Xout[is.na(Xout)] <- 0
 colnames(Xout) <- c("ID", "Negative", "Neutral", "Positive")
 write.csv(Xout, "SampleArea.csv", row.names=FALSE)
 ### Now merge with Centroids
-
-
+# Xout$Responses <- Xout$Negative+Xout$Neutral+Xout$Positive
+# Xout$Neg_Prop <- Xout$Negative/(Xout$Negative+Xout$Neutral+Xout$Positive)
+# Xout$Neut_Prop <- Xout$Neutral/(Xout$Negative+Xout$Neutral+Xout$Positive)
+# Xout$Pos_Prop <- Xout$Positive/(Xout$Negative+Xout$Neutral+Xout$Positive)
 ### start with shrimp example
 library(sp)
 #load("gridShrimp.RData")
@@ -420,6 +422,10 @@ Xout <- Xout[,c("Area", "Negative", "Neutral", "Positive")]
 Xout[is.na(Xout)] <- 0
 
 colnames(Xout) <- c("ID", "Negative", "Neutral", "Positive")
+Xout$Responses <- Xout$Negative+Xout$Neutral+Xout$Positive
+Xout$Neg_Prop <- Xout$Negative/(Xout$Negative+Xout$Neutral+Xout$Positive)
+Xout$Neut_Prop <- Xout$Neutral/(Xout$Negative+Xout$Neutral+Xout$Positive)
+Xout$Pos_Prop <- Xout$Positive/(Xout$Negative+Xout$Neutral+Xout$Positive)
 ### Now merge with Centroids
 
 write.csv(Xout, "SampleAreaAbundance.csv", row.names=FALSE)

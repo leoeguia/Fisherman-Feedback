@@ -137,14 +137,14 @@ print(barchart)
 
 ggsave("Word Plots/Most Frequent Bar.png", 
        plot = barchart,
-       width = 8, #Adjust width as needed
-       height = 8, #Adjust height as needed
+       width = 5.67, #Adjust width as needed
+       height = 3.37, #Adjust height as needed
        units = "in", 
        dpi = 700)
 ###This creates the sentiment word cloud
 png("Word Plots/Most Frequent Cloud.png",
-    width = 4, #Adjust width as needed
-    height = 4, #Adjust height as needed
+    width = 3.56, #Adjust width as needed
+    height = 3.37, #Adjust height as needed
     units = "in", 
     res = 700)
 par(mar = c(0, 0, 0, 0))

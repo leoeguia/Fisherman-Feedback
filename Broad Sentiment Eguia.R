@@ -53,6 +53,11 @@ ffdat <- ffdat_OG %>%
 #   pivot_wider(names_from = `Fleet`,values_from = value, values_fill = 0)
 
 
+# Check "Other" Category --------------------------------------------------
+#Manually fix some of the fleets
+others <- ffdat[ffdat$Other==1,]
+ffdat$`For-Hire` <- ifelse(ffdat$`FIRST Name`%in% c("Andrea","Capt Forest"),1,ffdat$`For-Hire`)
+
 ###########################################################################
 # Overall Feedback --------------------------------------------------------
 ###########################################################################
@@ -77,26 +82,27 @@ overall_sent$prop <- overall_sent$Freq/sum(overall_sent$Freq)
 overall_sent <- overall_sent %>% 
   arrange(desc(Freq)) %>% 
   mutate(label_pos = cumsum(prop)-prop/2,label = scales::percent(prop,accuracy = 1))
-
+#Sets the order of sentiment
+overall_sent$Sentiment <- factor(overall_sent$Sentiment, levels = c("Positive", "Neutral/Mixed","Negative"))
 # Pie Chart
 overall_sent_plot <- ggplot(overall_sent, aes(x = 1, y = prop, fill = Sentiment)) +
   geom_col(width = 1, color = "white") +
   coord_polar(theta = "y") +
-  geom_text(aes(label = label),position = position_stack(vjust = 0.5), color = "black", size = 6) +
+  geom_text(aes(label = Freq),position = position_stack(vjust = 0.5), color = "black", size = 6) +
   theme_void() +
-  scale_fill_manual(values = c("#ED7D31","#FFFF00","#92D050")) +
-  labs(title = "Overall Sentiment") +
+  scale_fill_manual(values = c("#92D050","#FFFF00","#ED7D31")) +
+  labs(title = "Overall Comment Sentiment") +
   theme(legend.position = "bottom",legend.title = element_blank(),
-        legend.text = element_text(size = 16),
-        plot.title = element_text(hjust = 0.5, size = 20),
+        legend.text = element_text(size = 16, color = '#595959'),
+        plot.title = element_text(hjust = 0.5, size = 14, color = '#595959'),
         plot.background  = element_rect(fill = "white", color = NA), #Comment out for no background
         panel.background = element_rect(fill = "white", color = NA)) #Comment out for no background
 
 print(overall_sent_plot)
 ggsave("Broad Sentiment Plots/Overall Sentiment.png", 
        plot = overall_sent_plot,
-       width = 8, #Adjust width as needed
-       height = 8, #Adjust height as needed
+       width = 5.41, #Adjust width as needed
+       height = 3.25, #Adjust height as needed
        units = "in", 
        dpi = 700)
 
@@ -115,39 +121,43 @@ stockcond <- ffdat[ffdat$`Final Related to Stock Condition`=='y',]
 #Compare all responses
 table(stockcond$`Final  Stock Condition`)
 
-
+pos_stockcond <- stockcond[stockcond$`Final  Stock Condition`==1,]
+neut_stockcond <- stockcond[stockcond$`Final  Stock Condition`==0,]
+neg_stockcond <- stockcond[stockcond$`Final  Stock Condition`==-1,]
 # Comments by stock condition (pie) ---------------------------------------
 
 
 # Prep data for Pie Chart
-stock_sent <- data.frame(Sentiment = c('Positive','Neutral/Mixed','Negative'),Freq = c(pos_cond,neut_cond,neg_cond))
+stock_sent <- data.frame(Sentiment = c('Negative','Neutral/Mixed','Positive'),Freq = c(neg_cond,neut_cond,pos_cond))
 #Add in proportions
 stock_sent$prop <- stock_sent$Freq/sum(stock_sent$Freq)
 #Adds label locations and identifiers
 stock_sent <- stock_sent %>% 
-  arrange(desc(Freq)) %>% 
-  mutate(label_pos = cumsum(prop)-prop/2,label = scales::percent(prop,accuracy = 1), small = prop < 0.08, mid = prop >0.08 & prop < 0.14, large = prop>0.14)
-
+  #arrange(-Sentiment) %>% 
+  mutate(label_pos = 1-(cumsum(prop)-prop/2),label = scales::percent(prop,accuracy = 1))
+#Sets the order of sentiment
+#stock_sent$Sentiment <- factor(stock_sent$Sentiment, levels = c("Positive", "Neutral/Mixed","Negative"))
 # Pie Chart
 stock_sent_plot <- ggplot(stock_sent, aes(x = 1, y = prop, fill = Sentiment)) +
   geom_col(width = 1, color = "white") +
   coord_polar(theta = "y") +
-  geom_text(aes(label = label),position = position_stack(vjust = 0.5), color = "black", size = 6) +
+  geom_text(aes(label = Freq, y=label_pos, x=1.3), color = "black", fontface = 'bold', size = 4) +
   theme_void() +
-  scale_fill_manual(values = c("#ED7D31","#FFFF00","#92D050")) +
+  #scale_fill_manual(values = c("#ED7D31","#FFFF00","#92D050")) +
+  scale_fill_manual(values = c("Negative" = "#ED7D31","Neutral/Mixed"  = "#FFFF00","Positive" = "#92D050"),breaks = c("Positive", "Neutral/Mixed", "Negative"))+
   labs(title = "Stock Condition Sentiment") +
   theme(legend.position = "bottom",
         legend.title = element_blank(),
-        legend.text = element_text(size = 16),
-        plot.title = element_text(hjust = 0.5, size = 20),
+        legend.text = element_text(size = 14, color = '#595959'),
+        plot.title = element_text(hjust = 0.5, size = 14, color = '#595959'),
         plot.background  = element_rect(fill = "white", color = NA), #Comment out for no background
         panel.background = element_rect(fill = "white", color = NA)) #Comment out for no background)
 
 print(stock_sent_plot)
 ggsave("Broad Sentiment Plots/Stock Condition Sentiment.png", 
        plot = stock_sent_plot,
-       width = 8, #Adjust width as needed
-       height = 8, #Adjust height as needed
+       height = 3.42, #Adjust width as needed
+       width = 5.03, #Adjust height as needed
        units = "in", 
        dpi = 700)
 
@@ -166,6 +176,8 @@ CM <- ffdat[ffdat$`Commercial`==1,]
 (FH_resp <- nrow(FH))
 (CM_resp <- nrow(CM))
 
+#Total sector responses (greater than actual responses)
+(PR_resp+FH_resp+CM_resp)
 
 ### Prep data for Pie Chart 
 
@@ -182,13 +194,13 @@ num_sector <- num_sector %>%
 sectorpieplot <- ggplot(num_sector, aes(x = 1, y = prop, fill = Fleet)) +
   geom_col(width = 1, color = "white") +
   coord_polar(theta = "y") +
-  geom_text(aes(label = label),position = position_stack(vjust = 0.5), color = "black", size = 6) +
+  geom_text(aes(label = Freq, y=label_pos, x=1.3), color = "black", size = 4,fontface = "bold") +
   theme_void() +
-  scale_fill_manual(values = c("#4472C4","#A5A5A5","#CDCDFF")) +
-  labs(title = "Responses by Sector") +
+  scale_fill_manual(values = c("#4472C4","#CCCCFF","#A6A6A6")) +
+  #labs(title = "Responses by Sector") +
   theme(legend.position = "bottom",
         legend.title = element_blank(),
-        legend.text = element_text(size = 16),
+        legend.text = element_text(size = 12, color = '#595959'),
         plot.title = element_text(hjust = 0.5, size = 20),
         plot.background  = element_rect(fill = "white", color = NA), #Comment out for no background
         panel.background = element_rect(fill = "white", color = NA)) #Comment out for no background)
@@ -196,8 +208,8 @@ sectorpieplot <- ggplot(num_sector, aes(x = 1, y = prop, fill = Fleet)) +
 print(sectorpieplot)
 ggsave("Broad Sentiment Plots/Responses by Sector Pie.png", 
        plot = sectorpieplot,
-       width = 8, #Adjust width as needed
-       height = 8, #Adjust height as needed
+       width = 4.28, #Adjust width as needed
+       height = 3.05, #Adjust height as needed
        units = "in", 
        dpi = 700)
 
@@ -251,19 +263,23 @@ sectorsent$Sentiment <- factor(sectorsent$Sentiment, levels = c("Positive", "Neu
 
 ###Plot
 sect_sent_plot <- ggplot(sectorsent, aes(x = Fleet, y = Freq, fill = Sentiment)) +
-  geom_bar(stat = "identity", position = "dodge") +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.7), width = 0.6) +
   labs(title = "Overall Sentiment by Sector", x = "", y = "", fill = "") +
   scale_fill_manual(values = c("#92D050","#FFFF00","#ED7D31")) +
+  scale_y_continuous(breaks = seq(0,150,25), limits = c(0,150))+
   theme_minimal()+
-  theme(legend.position = "bottom",legend.title = element_blank(),legend.text = element_text(size = 12),
-        plot.title = element_text(hjust = 0.5, size = 20),axis.text = element_text(size = 12),
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 14, color = "#595959"),
+        plot.title = element_text(hjust = 0.5, size = 14, color = '#595959'),
+        axis.text = element_text(size = 9, color = "#595959"),
         panel.grid.major.x = element_blank(),panel.grid.minor.x = element_blank(),
-        panel.grid.major.y = element_line(),panel.grid.minor.y = element_line())
+        panel.grid.major.y = element_line(),panel.grid.minor.y = element_blank())
 print(sect_sent_plot)
 ggsave("Broad Sentiment Plots/Overall Sentiment by Sector.png", 
        plot = sect_sent_plot, 
-       width = 12, #Adjust width as needed
-       height = 8, #Adjust height as needed
+       width = 6.5, #Adjust width as needed
+       height = 3.76, #Adjust height as needed
        units = "in", 
        dpi = 700)
 # Stock condition by sector (bar) -----------------------------------------
@@ -296,19 +312,24 @@ sectorstock_sent$Sentiment <- factor(sectorstock_sent$Sentiment, levels = c("Pos
 
 ###Plot
 sect_stock_sent_plot <- ggplot(sectorstock_sent, aes(x = Fleet, y = Freq, fill = Sentiment)) +
-  geom_bar(stat = "identity", position = "dodge") +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.7), width = 0.6) +
   labs(title = "Stock Condition Sentiment by Sector", x = "", y = "", fill = "Subgroup") +
   scale_fill_manual(values = c("#92D050","#FFFF00","#ED7D31")) +
   theme_minimal()+
-  theme(legend.position = "bottom",legend.title = element_blank(),legend.text = element_text(size = 12),
-        plot.title = element_text(hjust = 0.5, size = 20),axis.text = element_text(size = 12),
+  theme(legend.position = "bottom",
+        legend.margin = margin(t = -10),
+        plot.margin = margin(5, 5, 0, 5),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 9, color = '#595959'),
+        plot.title = element_text(hjust = 0.5, size = 14, color = '#595959'),
+        axis.text = element_text(size = 9, color = '#595959'),
         panel.grid.major.x = element_blank(),panel.grid.minor.x = element_blank(),
-        panel.grid.major.y = element_line(),panel.grid.minor.y = element_line())
+        panel.grid.major.y = element_line(),panel.grid.minor.y = element_blank())
 print(sect_stock_sent_plot)
 #Save the plot to the filepath
 ggsave("Broad Sentiment Plots/Stock Condition Sentiment by Sector.png", 
        plot = sect_stock_sent_plot, 
-       width = 12, #Adjust width as needed
-       height = 8, #Adjust height as needed
+       width = 6.11, #Adjust width as needed
+       height = 2.81, #Adjust height as needed
        units = "in", 
        dpi = 700)
