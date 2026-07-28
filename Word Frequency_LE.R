@@ -36,6 +36,9 @@ rg <- gsub("bigger", "big", rg, ignore.case = TRUE)
 rg <- gsub("shorter", "short", rg, ignore.case = TRUE)
 rg <- gsub("no shortage", "no_shortage", rg, ignore.case = TRUE)
 rg <- gsub("abundance", "abundant", rg, ignore.case = TRUE)
+rg <- gsub("consistently", "consistent", rg, ignore.case = TRUE)
+rg <- gsub("increased", "increase", rg, ignore.case = TRUE)
+rg <- gsub("plenty", "plentiful", rg, ignore.case = TRUE)
 out <- c()
 
 ###modify the Bing library for more fisheries context
@@ -135,14 +138,14 @@ barchart <- ggplot(top_words, aes(word, n, fill = sentiment)) +
   coord_flip()
 print(barchart)
 
-ggsave("Word Plots/Most Frequent Bar.png", 
+ggsave("Word Plots/Most Frequent Bar Updated.png", 
        plot = barchart,
        width = 5.67, #Adjust width as needed
        height = 3.37, #Adjust height as needed
        units = "in", 
        dpi = 700)
 ###This creates the sentiment word cloud
-png("Word Plots/Most Frequent Cloud.png",
+png("Word Plots/Most Frequent Cloud_50.png",
     width = 3.56, #Adjust width as needed
     height = 3.37, #Adjust height as needed
     units = "in", 
@@ -153,7 +156,7 @@ rg3 %>%
   count(word, sentiment, sort = TRUE) %>%
   acast(word ~ sentiment, value.var = "n", fill = 0) %>%
   comparison.cloud(colors = c("#fc8d59","#99d594"), 
-                   max.words = 30, title.size=1.5,match.color=TRUE)
+                   max.words = 50, title.size=1.5,match.color=TRUE)
 dev.off()
 # Abundance People Only ---------------------------------------------------
 
